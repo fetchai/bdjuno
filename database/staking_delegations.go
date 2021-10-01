@@ -18,7 +18,7 @@ import (
 // TIP: To store the validators data call SaveValidatorsData.
 func (db *Db) SaveDelegations(delegations []types.Delegation) error {
 
-	paramsNumber := 1
+	paramsNumber := 4
 	slices := dbutils.SplitDelegations(delegations, paramsNumber)
 
 	for _, delegation := range slices {
