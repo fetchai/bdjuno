@@ -337,21 +337,29 @@ func (db *Db) DeleteCompletedRedelegations(timestamp time.Time) ([]types.Redeleg
 // To store the validators data call SaveValidatorData(s).
 // To store the account data call SaveAccount.
 func (db *Db) SaveUnbondingDelegations(delegations []types.UnbondingDelegation) error {
-	// If the delegations are empty just return
-	if len(delegations) == 0 {
-		return nil
-	}
+	paramsNumber := 5
+	slices := dbutils.SplitUnbondingDelegations(delegations, paramsNumber)
 
-	err := db.storeUpToDateUnbondingDelegations(delegations)
-	if err != nil {
-		return fmt.Errorf("error while storing up-to-date undonding delegations: %s", err)
+	for _, delegation := range slices {
+		if len(delegation) == 0 {
+			continue
+		}
+
+		err := db.storeUpToDateUnbondingDelegations(paramsNumber, delegations)
+		if err != nil {
+			return fmt.Errorf("error while storing up-to-date undonding delegations: %s", err)
+		}
 	}
 
 	return nil
 }
 
 // storeUpToDateUnbondingDelegations allows to store the given unbonding delegations as the most up-to-date ones
-func (db *Db) storeUpToDateUnbondingDelegations(delegations []types.UnbondingDelegation) error {
+func (db *Db) storeUpToDateUnbondingDelegations(paramsNumber int, delegations []types.UnbondingDelegation) error {
+	if len(delegations) == 0 {
+		return nil
+	}
+
 	accQry := `
 INSERT INTO account (address) VALUES `
 	var accParams []interface{}
@@ -377,7 +385,7 @@ VALUES `
 			return fmt.Errorf("error while converting coin to dbcoin: %s", err)
 		}
 
-		udi := i * 5
+		udi := i * paramsNumber
 		udQry += fmt.Sprintf("($%d,$%d,$%d,$%d,$%d),", udi+1, udi+2, udi+3, udi+4, udi+5)
 		udParams = append(udParams,
 			validator.GetConsAddr(), delegation.DelegatorAddress, amount, delegation.CompletionTimestamp, delegation.Height)
