@@ -76,13 +76,21 @@ INSERT INTO delegation (validator_address, delegator_address, amount, height) VA
 			consAddr.String(), delegation.DelegatorAddress, value, delegation.Height)
 	}
 
-	// Insert the accounts
-	accQry = accQry[:len(accQry)-1] // Remove the trailing ","
-	accQry += " ON CONFLICT DO NOTHING"
+	paramNum := 1
+	slices := dbutils.SplitAccountsInDelegations(accParams, paramNum)
 
-	_, err := db.Sql.Exec(accQry, accParams...)
-	if err != nil {
-		return fmt.Errorf("error while storing accounts: %s", err)
+	for _, address := range slices {
+		if len(address) == 0 {
+			continue
+		}
+		// Insert the accounts
+		accQry = accQry[:len(accQry)-1] // Remove the trailing ","
+		accQry += " ON CONFLICT DO NOTHING"
+
+		_, err := db.Sql.Exec(accQry, address...)
+		if err != nil {
+			return fmt.Errorf("error while storing accounts: %s", err)
+		}
 	}
 
 	// Insert the delegations
@@ -92,7 +100,7 @@ ON CONFLICT ON CONSTRAINT delegation_validator_delegator_unique
 DO UPDATE SET amount = excluded.amount, height = excluded.height
 WHERE delegation.height <= excluded.height`
 
-	_, err = db.Sql.Exec(delQry, delParams...)
+	_, err := db.Sql.Exec(delQry, delParams...)
 	if err != nil {
 		return fmt.Errorf("error while storing delegations: %s", err)
 	}
