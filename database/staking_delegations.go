@@ -155,20 +155,30 @@ func (db *Db) GetDelegators() ([]string, error) {
 // To store the validators data call SaveValidatorData(s).
 // To store the account data call SaveAccount.
 func (db *Db) SaveRedelegations(redelegations []types.Redelegation) error {
-	if len(redelegations) == 0 {
-		return nil
-	}
+	paramsNumber := 6
+	slices := dbutils.SplitRedelegations(redelegations, paramsNumber)
 
-	err := db.storeUpToDateRedelegations(redelegations)
-	if err != nil {
-		return fmt.Errorf("error while storing up-to-date redelegations: %s", err)
+	for _, redelegation := range slices {
+		if len(redelegation) == 0 {
+			continue
+		}
+
+		err := db.storeUpToDateRedelegations(paramsNumber, redelegations)
+		if err != nil {
+			return fmt.Errorf("error while storing up-to-date redelegations: %s", err)
+		}
 	}
 
 	return nil
 }
 
 // storeUpToDateRedelegations allows to store the given redelegations as the most up-to-date ones
-func (db *Db) storeUpToDateRedelegations(redelegations []types.Redelegation) error {
+func (db *Db) storeUpToDateRedelegations(paramsNumber int, redelegations []types.Redelegation) error {
+
+	if len(redelegations) == 0 {
+		return nil
+	}
+
 	accQry := `
 INSERT INTO account (address) VALUES `
 	var accParams []interface{}
@@ -202,7 +212,7 @@ VALUES `
 			return fmt.Errorf("error while converting coin to dbcoin: %s", err)
 		}
 
-		rdi := i * 6
+		rdi := i * paramsNumber
 		rdQry += fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d),", rdi+1, rdi+2, rdi+3, rdi+4, rdi+5, rdi+6)
 		rdParams = append(rdParams,
 			redelegation.DelegatorAddress,

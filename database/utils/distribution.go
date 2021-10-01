@@ -17,3 +17,19 @@ func SplitDelegations(delegations []types.Delegation, paramsNumber int) [][]type
 
 	return slices
 }
+
+func SplitRedelegations(redelegations []types.Redelegation, paramsNumber int) [][]types.Redelegation {
+	maxBalancesPerSlice := maxPostgreSQLParams / paramsNumber
+	slices := make([][]types.Redelegation, len(redelegations)/maxBalancesPerSlice+1)
+
+	sliceIndex := 0
+	for index, redelegation := range redelegations {
+		slices[sliceIndex] = append(slices[sliceIndex], redelegation)
+
+		if index > 0 && index%(maxBalancesPerSlice-1) == 0 {
+			sliceIndex++
+		}
+	}
+
+	return slices
+}
