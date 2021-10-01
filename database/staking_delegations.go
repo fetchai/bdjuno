@@ -9,6 +9,7 @@ import (
 	"github.com/forbole/bdjuno/types"
 
 	dbtypes "github.com/forbole/bdjuno/database/types"
+	dbutils "github.com/forbole/bdjuno/database/utils"
 )
 
 // SaveDelegations stores inside the database the given delegations data.
@@ -16,20 +17,32 @@ import (
 // the proper database table.
 // TIP: To store the validators data call SaveValidatorsData.
 func (db *Db) SaveDelegations(delegations []types.Delegation) error {
+
+	paramsNumber := 1
+	slices := dbutils.SplitDelegations(delegations, paramsNumber)
+
+	for _, delegation := range slices {
+		if len(delegation) == 0 {
+			continue
+		}
+
+		err := db.storeUpToDateDelegations(paramsNumber, delegations)
+		if err != nil {
+			return fmt.Errorf("error while storing up-to-date delegations: %s", err)
+		}
+	}
+
+	return nil
+
+}
+
+// storeUpToDateDelegations stores the given delegations as the most up-to-date ones
+func (db *Db) storeUpToDateDelegations(paramsNumber int, delegations []types.Delegation) error {
+
 	if len(delegations) == 0 {
 		return nil
 	}
 
-	err := db.storeUpToDateDelegations(delegations)
-	if err != nil {
-		return fmt.Errorf("error while storing up-to-date delegations: %s", err)
-	}
-
-	return nil
-}
-
-// storeUpToDateDelegations stores the given delegations as the most up-to-date ones
-func (db *Db) storeUpToDateDelegations(delegations []types.Delegation) error {
 	accQry := `
 INSERT INTO account (address) VALUES `
 	var accParams []interface{}
@@ -57,7 +70,7 @@ INSERT INTO delegation (validator_address, delegator_address, amount, height) VA
 		}
 
 		// Current delegation query
-		di := i * 4
+		di := i * paramsNumber
 		delQry += fmt.Sprintf("($%d,$%d,$%d,$%d),", di+1, di+2, di+3, di+4)
 		delParams = append(delParams,
 			consAddr.String(), delegation.DelegatorAddress, value, delegation.Height)
