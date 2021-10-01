@@ -87,7 +87,7 @@ INSERT INTO delegation (validator_address, delegator_address, amount, height) VA
 		accQry = accQry[:len(accQry)-1] // Remove the trailing ","
 		accQry += " ON CONFLICT DO NOTHING"
 
-		_, err := db.Sql.Exec(accQry, address)
+		_, err := db.Sql.Exec(accQry, address...)
 		if err != nil {
 			return fmt.Errorf("error while storing accounts: %s", err)
 		}
