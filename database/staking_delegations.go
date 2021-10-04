@@ -21,12 +21,12 @@ func (db *Db) SaveDelegations(delegations []types.Delegation) error {
 	paramsNumber := 4
 	slices := dbutils.SplitDelegations(delegations, paramsNumber)
 
-	for _, delegation := range slices {
-		if len(delegation) == 0 {
+	for _, delegationSlice := range slices {
+		if len(delegationSlice) == 0 {
 			continue
 		}
 
-		err := db.storeUpToDateDelegations(paramsNumber, delegations)
+		err := db.storeUpToDateDelegations(paramsNumber, delegationSlice)
 		if err != nil {
 			return fmt.Errorf("error while storing up-to-date delegations: %s", err)
 		}
@@ -166,12 +166,12 @@ func (db *Db) SaveRedelegations(redelegations []types.Redelegation) error {
 	paramsNumber := 6
 	slices := dbutils.SplitRedelegations(redelegations, paramsNumber)
 
-	for _, redelegation := range slices {
-		if len(redelegation) == 0 {
+	for _, redelegationSlice := range slices {
+		if len(redelegationSlice) == 0 {
 			continue
 		}
 
-		err := db.storeUpToDateRedelegations(paramsNumber, redelegations)
+		err := db.storeUpToDateRedelegations(paramsNumber, redelegationSlice)
 		if err != nil {
 			return fmt.Errorf("error while storing up-to-date redelegations: %s", err)
 		}
@@ -348,12 +348,12 @@ func (db *Db) SaveUnbondingDelegations(delegations []types.UnbondingDelegation) 
 	paramsNumber := 5
 	slices := dbutils.SplitUnbondingDelegations(delegations, paramsNumber)
 
-	for _, delegation := range slices {
-		if len(delegation) == 0 {
+	for _, delegationSlice := range slices {
+		if len(delegationSlice) == 0 {
 			continue
 		}
 
-		err := db.storeUpToDateUnbondingDelegations(paramsNumber, delegations)
+		err := db.storeUpToDateUnbondingDelegations(paramsNumber, delegationSlice)
 		if err != nil {
 			return fmt.Errorf("error while storing up-to-date undonding delegations: %s", err)
 		}
