@@ -74,9 +74,6 @@ func ConvertValidatorDescription(
 ) (types.ValidatorDescription, error) {
 	var avatarURL string
 
-	if description.Identity == "" {
-		avatarURL = ""
-	}
 	if description.Identity == stakingtypes.DoNotModifyDesc {
 		avatarURL = stakingtypes.DoNotModifyDesc
 	} else {
