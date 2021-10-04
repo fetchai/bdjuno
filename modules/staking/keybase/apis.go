@@ -18,7 +18,7 @@ func GetAvatarURL(identity string) (string, error) {
 	endpoint := fmt.Sprintf("/user/lookup.json?key_suffix=%[1]s&fields=basics&fields=pictures", identity)
 	err := queryKeyBase(endpoint, &response)
 	if err != nil {
-		return "", fmt.Errorf("error while querying keybase")
+		return "", fmt.Errorf("error while querying keybase %s", err)
 	}
 
 	// The server responded with an error
