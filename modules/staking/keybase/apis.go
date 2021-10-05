@@ -50,14 +50,18 @@ func queryKeyBase(endpoint string, ptr interface{}) error {
 	}
 
 	defer resp.Body.Close()
+	if resp == nil || resp.Body == nil {
+		return nil
+	}
 
 	bz, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error while reading response body: %s", err)
 	}
-	 if len(bz) == 0 {
-        return nil
-    }
+
+	if len(bz) == 0 {
+		return nil
+	}
 
 	err = json.Unmarshal(bz, &ptr)
 	if err != nil {
