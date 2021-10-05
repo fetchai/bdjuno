@@ -49,7 +49,7 @@ func queryKeyBase(endpoint string, ptr interface{}) error {
 		return fmt.Errorf("error while querying keybase APIs: %s", err)
 	}
 
-	defer resp.Body.Close()
+	// defer resp.Body.Close()
 
 	if resp != nil || resp.Body != nil {
 		bz, err := ioutil.ReadAll(resp.Body)
